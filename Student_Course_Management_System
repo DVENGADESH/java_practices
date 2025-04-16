@@ -1,0 +1,293 @@
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class User {
+    private String name, password;
+    private ArrayList<BorrowedBook> borrowedBooks;
+
+    public User(String name, String password) {
+        this.name = name;
+        this.password = password;
+        this.borrowedBooks = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void addBorrowedBook(BorrowedBook book) {
+        borrowedBooks.add(book);
+    }
+
+    public void viewBorrowedBooks() {
+        if (borrowedBooks.isEmpty()) {
+            System.out.println("You have not borrowed any books.");
+        } else {
+            System.out.println("\n Your Borrowed Books:");
+            for (BorrowedBook book : borrowedBooks) {
+                book.displayDetails();
+                System.out.println();
+            }
+        }
+    }
+}
+
+
+class BorrowedBook {
+    private int bookID;
+    private String bookTitle;
+    private LocalDate borrowedDate;
+    private LocalDate dueDate;
+
+    public BorrowedBook(int bookID, String bookTitle, LocalDate borrowedDate) {
+        this.bookID = bookID;
+        this.bookTitle = bookTitle;
+        this.borrowedDate = borrowedDate;
+        this.dueDate = borrowedDate.plusDays(7);
+    }
+
+    public void displayDetails() {
+        System.out.println("Book ID: " + bookID);
+        System.out.println("Title: " + bookTitle);
+        System.out.println("Borrowed On: " + borrowedDate);
+        System.out.println("Due Date: " + dueDate);
+    }
+}
+
+
+
+class Book {
+    private int bookID;
+    private String bookName, author;
+
+    public Book(int bookID, String bookName, String author) {
+        this.bookID = bookID;
+        this.bookName = bookName;
+        this.author = author;
+    }
+
+    public int getBookID() {
+        return bookID;
+    }
+
+    public String getBookName() {
+        return bookName;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void display() {
+        System.out.println("ID: " + bookID + " | Title: " + bookName + " | Author: " + author);
+    }
+}
+
+
+
+class Library {
+    private ArrayList<Book> books;
+    private ArrayList<User> users;
+
+    public Library() {
+        this.books = new ArrayList<>();
+        this.users = new ArrayList<>();
+    }
+
+    public void addBook(Book book) {
+        books.add(book);
+        System.out.println("Book added successfully.");
+    }
+
+    public void removeBook(int id) {
+        for (Book b : books) {
+            if (b.getBookID() == id) {
+                books.remove(b);
+                System.out.println(" Book removed successfully.");
+                return;
+            }
+        }
+        System.out.println(" Book not found!");
+    }
+
+    public void showBooks() {
+        if (books.isEmpty()) {
+            System.out.println("No books available in library.");
+        } else {
+            System.out.println(" Available Books:");
+            for (Book b : books) {
+                b.display();
+            }
+        }
+    }
+
+    public Book getBookByID(int id) {
+        for (Book b : books) {
+            if (b.getBookID() == id) {
+                return b;
+            }
+        }
+        return null;
+    }
+
+    public void addUser(User user) {
+        users.add(user);
+    }
+
+    public ArrayList<User> getUsers() {
+        return users;
+    }
+
+    public ArrayList<Book> getBooks() {
+        return books;
+    }
+}
+
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Library library = new Library();
+
+
+        String adminUser = "admin";
+        String adminPass = "admin123";
+
+
+        User user1 = new User("vicky", "123");
+        User user2 = new User("raj", "456");
+        library.addUser(user1);
+        library.addUser(user2);
+
+
+        library.addBook(new Book(101, "Java Basics", "James"));
+        library.addBook(new Book(102, "Python Guide", "Guido"));
+        library.addBook(new Book(103, "Data Structures", "Mark"));
+
+        while (true) {
+            System.out.println("\n===== LIBRARY SYSTEM LOGIN =====");
+            System.out.println("1. User Login");
+            System.out.println("2. Admin Login");
+            System.out.println("3. Exit");
+            System.out.print("Enter option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); 
+
+
+            if (choice == 1) {
+                System.out.print("Enter username: ");
+                String uname = scanner.nextLine();
+                System.out.print("Enter password: ");
+                String upass = scanner.nextLine();
+
+                boolean found = false;
+                for (User u : library.getUsers()) {
+                    if (u.getName().equals(uname) && u.getPassword().equals(upass)) {
+                        found = true;
+                        System.out.println("\n User Login Successful!");
+                        while (true) {
+                            System.out.println("\n--- USER DASHBOARD ---");
+                            System.out.println("1. View Available Books");
+                            System.out.println("2. Borrow Book");
+                            System.out.println("3. View Borrowed Books");
+                            System.out.println("4. Logout");
+                            System.out.print("Enter option: ");
+                            int uc = scanner.nextInt();
+                            scanner.nextLine();
+
+                            if (uc == 1) {
+                                library.showBooks();
+                            } else if (uc == 2) {
+                                System.out.print("Enter Book ID to borrow: ");
+                                int bid = scanner.nextInt();
+                                scanner.nextLine();
+                                Book book = library.getBookByID(bid);
+                                if (book != null) {
+                                    BorrowedBook borrowed = new BorrowedBook(book.getBookID(), book.getBookName(), LocalDate.now());
+                                    u.addBorrowedBook(borrowed);
+                                    System.out.println("Book borrowed successfully!");
+                                } else {
+                                    System.out.println("Book not found.");
+                                }
+                            } else if (uc == 3) {
+                                u.viewBorrowedBooks();
+                            } else if (uc == 4) {
+                                System.out.println("Logged out.");
+                                break;
+                            } else {
+                                System.out.println("Invalid Option.");
+                            }
+                        }
+                    }
+                }
+                if (!found) {
+                    System.out.println("Invalid user credentials.");
+                }
+
+            } else if (choice == 2) {
+                System.out.print("Enter admin username: ");
+                String ad = scanner.nextLine();
+                System.out.print("Enter admin password: ");
+                String ap = scanner.nextLine();
+
+                if (ad.equals(adminUser) && ap.equals(adminPass)) {
+                    System.out.println("\n Admin Login Successful!");
+                    while (true) {
+                        System.out.println("\n--- ADMIN DASHBOARD ---");
+                        System.out.println("1. View All Books");
+                        System.out.println("2. Add Book");
+                        System.out.println("3. Remove Book");
+                        System.out.println("4. View Users");
+                        System.out.println("5. Logout");
+                        System.out.print("Enter option: ");
+                        int ac = scanner.nextInt();
+                        scanner.nextLine();
+
+                        if (ac == 1) {
+                            library.showBooks();
+                        } else if (ac == 2) {
+                            System.out.print("Enter Book ID: ");
+                            int id = scanner.nextInt();
+                            scanner.nextLine();
+                            System.out.print("Enter Book Name: ");
+                            String name = scanner.nextLine();
+                            System.out.print("Enter Author: ");
+                            String author = scanner.nextLine();
+                            library.addBook(new Book(id, name, author));
+                        } else if (ac == 3) {
+                            System.out.print("Enter Book ID to remove: ");
+                            int id = scanner.nextInt();
+                            scanner.nextLine();
+                            library.removeBook(id);
+                        } else if (ac == 4) {
+                            System.out.println("\nRegistered Users:");
+                            for (User u : library.getUsers()) {
+                                System.out.println("- " + u.getName());
+                            }
+                        } else if (ac == 5) {
+                            System.out.println("Admin Logged out.");
+                            break;
+                        } else {
+                            System.out.println("Invalid Option.");
+                        }
+                    }
+                } else {
+                    System.out.println("Invalid admin credentials.");
+                }
+
+            } else if (choice == 3) {
+                System.out.println("Exiting Library System. Bye!");
+                break;
+            } else {
+                System.out.println("Invalid option.");
+            }
+        }
+
+
+    }
+}
